@@ -43,7 +43,7 @@ public class Interface {
     /**
      * 
      */
-    public void entryMessageByUser() throws NoSuchPaddingException {
+    public void readingInput() throws NoSuchPaddingException {
 
         while (reading && logged) {
 
@@ -159,7 +159,7 @@ public class Interface {
             listener.start();
 
             // Initialize a subroutine for sending messages
-            entryMessageByUser();
+            readingInput();
 
             // Bot run
         } else {

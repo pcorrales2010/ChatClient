@@ -17,6 +17,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
@@ -41,6 +42,16 @@ public class Client {
     Encrypt encryption = new Encrypt();
     boolean cipherMessage;
 
+    private final static Logger LOGGER = Logger.getLogger(Interface.class.getName());
+    private boolean reading = true;
+    private boolean logged = false;
+    private String msg = null;
+    private Socket mySocket;
+    private Client sender;
+    private ListenThread listener;
+    Connection conct;
+    private Scanner sc;
+    private Logger log;
     /**
      * Constructor that receive a Socket and fill writer and reader private
  variables.
@@ -99,7 +110,8 @@ public class Client {
      */
     public void sendMessage(String message) throws NoSuchPaddingException {
         if (message.toUpperCase().contains("/SECRET")) {
-            String messageSplitted[] = message.split("/SECRET ");
+            String messageSplit = message.substring(message.toUpperCase().indexOf("/SECRET") + 7);
+            String messageSplitted[] = messageSplit.split(" ");
             if (messageSplitted.length != 1) {
                 if (messageSplitted[1].toUpperCase().contains("ON")) {
                     setSecret(true);
@@ -144,4 +156,83 @@ public class Client {
         this.cipherMessage = secret;
     }
 
+    public void run(int isClient) throws ClientException, InterruptedException, IOException, NoSuchAlgorithmException, NoSuchPaddingException {
+        boolean running = true;
+
+        // Stablish socket connection
+        while (running) {
+            try {
+                mySocket = stablishConnection();
+                running = false;
+            } catch (ClientException e) {
+                LOGGER.log(Level.SEVERE, e.toString(), e);
+            }
+        }
+
+        // Initialize new instance of Client named sender
+        try {
+            sender = new Client(mySocket);
+        } catch (ClientException e) {
+            LOGGER.log(Level.SEVERE, e.toString(), e);
+        }
+
+        // Client authentication
+        logged = runAuthentication(isClient);
+
+        // Client run
+        if (isClient == 1) {
+            // Initialize new instance of ListenThred name listener
+            try {
+                listener = new ListenThread(mySocket);
+            } catch (ClientException e) {
+                LOGGER.log(Level.SEVERE, e.toString(), e);
+            }
+
+            listener.start();
+
+            // Initialize a subroutine for sending messages
+            entryMessageByUser();
+
+            // Bot run
+        } else {
+            Bot myBot = new Bot(sender);
+            myBot.listeningMessages();
+        }
+
+        // Close scanner
+        sc.close();
+    }
+    
+    public Socket stablishConnection() throws ClientException, IOException {
+
+        String ip;
+        String port;
+
+        System.out.println("Introduce hostname:");
+        ip = "127.0.0.1";
+        //ip = sc.nextLine();
+        System.out.println("Introduce port:");
+        port = "49080";
+        //port = sc.nextLine();
+
+        if (port.matches("[0-9]+")) {
+            conct = new Connection(ip, Integer.parseInt(port));
+            mySocket = conct.connect();
+
+            // Check if socket is connected successfully
+            if (mySocket != null) {
+                if (mySocket.isConnected()) {
+                    return mySocket;
+                } else {
+                    throw new ClientException("Error: Socket connection could not be stablished.");
+                }
+            } else {
+                throw new ClientException("Error: Server is not running.");
+
+            }
+        } else {
+            throw new ClientException("Error: Incorrect port format.");
+        }
+    }
+    
 }
