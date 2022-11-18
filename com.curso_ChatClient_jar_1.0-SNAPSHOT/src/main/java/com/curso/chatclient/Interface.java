@@ -28,11 +28,25 @@ public class Interface {
         return sc.nextLine();
     }
 
+    public String username() {
+        output("Username: ");
+        return input();
+    }
+
+    public String password() {
+        output("Password :");
+        return input();
+    }
+
     public void output(String message) {
         System.out.println(message);
     }
 
-    public void closeScanner(){
+    public void outputLine(String message) {
+        System.out.print(message);
+    }
+
+    public void closeScanner() {
         sc.close();
     }
 

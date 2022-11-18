@@ -7,6 +7,8 @@ package com.curso.chatclient;
 import com.curso.exceptions.ClientException;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayDeque;
+
 import javax.crypto.NoSuchPaddingException;
 
 /**
@@ -15,8 +17,11 @@ import javax.crypto.NoSuchPaddingException;
  */
 public class MainBot {
     public static void main(String[] args) throws ClientException, InterruptedException, NoSuchAlgorithmException, IOException, NoSuchPaddingException {
-        Bot bot = new Bot(newSocket);
-        // Run for a client
-        menu.run(0);
+        ArrayDeque<String> array = new ArrayDeque<>();
+        String msg = "hola como estas?";
+        array.add(msg);
+        while(!array.isEmpty()){
+            System.out.println(array.poll());
+        }
     }
 }

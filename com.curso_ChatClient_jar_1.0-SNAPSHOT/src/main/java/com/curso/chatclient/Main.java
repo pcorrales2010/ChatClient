@@ -24,7 +24,7 @@ public class Main {
             NoSuchAlgorithmException, ClassNotFoundException, NoSuchPaddingException {
         Interface terminal = new Interface();
         boolean running = true;
-        Connection conct;
+        Connection conct = null;
         Socket socket = null;
         Client sender = null;
         String port;
@@ -57,5 +57,6 @@ public class Main {
         }
         // Run for a client
         sender.run();
+        conct.close();
     }
 }
