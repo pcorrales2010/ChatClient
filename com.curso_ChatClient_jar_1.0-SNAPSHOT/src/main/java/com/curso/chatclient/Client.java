@@ -5,6 +5,9 @@
 package com.curso.chatclient;
 
 import com.curso.exceptions.ClientException;
+
+import static org.mockito.ArgumentMatchers.booleanThat;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +19,11 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Date;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,33 +39,60 @@ import javax.crypto.spec.IvParameterSpec;
  *
  * @author pcorrales2010
  */
-public class Client {
+public class Client implements Runnable {
 
-    Socket socket;
+    private final static Logger LOGGER = Logger.getLogger(Client.class.getName());
     PrintWriter writer;
     BufferedReader reader;
-    private final static Logger LOGGERCLIENT = Logger.getLogger(Client.class.getName());
 
     Encrypt encryption = new Encrypt();
     boolean cipherMessage;
 
-    private final static Logger LOGGER = Logger.getLogger(Interface.class.getName());
-    private boolean reading = true;
     private boolean logged = false;
+    private ArrayDeque<String> messages = new ArrayDeque<String>();
     private String msg = null;
-    private Socket mySocket;
-    private Client sender;
+    private Socket socket;
     private ListenThread listener;
     Connection conct;
-    private Scanner sc;
-    private Logger log;
+    private Interface terminal;
+
+    Runnable listening = new Runnable() {
+
+        @Override
+        public void run() {
+            messages.add("while");
+            while (true) {
+                try {
+                    messages.add(getMessage());
+                } catch (ClientException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    };
+
+    Runnable Input = new Runnable() {
+        @Override
+        public void run() {
+            while (true) {
+                try {
+                    readingInput();
+                } catch (NoSuchPaddingException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+    };
+
     /**
      * Constructor that receive a Socket and fill writer and reader private
- variables.
+     * variables.
      *
      * @param newSocket
-     * @throws ClientException when an I/O error occurs while creating the
-     * output/input stream.
+     * @throws ClientException                        when an I/O error occurs while
+     *                                                creating the
+     *                                                output/input stream.
      * @throws java.security.NoSuchAlgorithmException
      */
     public Client(Socket newSocket) throws ClientException, NoSuchAlgorithmException {
@@ -66,6 +100,8 @@ public class Client {
             socket = newSocket;
             InputStream input;
             OutputStream output;
+            cipherMessage = false;
+            terminal = new Interface();
 
             try {
                 output = newSocket.getOutputStream();
@@ -77,55 +113,25 @@ public class Client {
                 writer = new PrintWriter(output, true);
                 input = socket.getInputStream();
             } catch (SecurityException | IllegalArgumentException | IOException ex) {
-                LOGGERCLIENT.log(Level.FINE, ex.toString(), ex);
-                throw new ClientException("Error creating the input stream: The socket is closed, not connected or the input has been shutdown");
-
+                LOGGER.log(Level.FINE, ex.toString(), ex);
+                throw new ClientException(
+                        "Error creating the input stream: The socket is closed, not connected or the input has been shutdown");
             }
 
             reader = new BufferedReader(new InputStreamReader(input));
         }
     }
 
-    /**
-     * Parametrized constructor to inject variables. This constructor is being
-     * used into Test files.
-     *
-     * @param newSocket
-     * @param newWriter
-     * @param newReader
-     */
-    public Client(Socket newSocket, PrintWriter newWriter, BufferedReader newReader) {
-        socket = newSocket;
-        writer = newWriter;
-        reader = newReader;
-        cipherMessage = false;
-    }
-
-    /**
-     * Send the message and current date from client to server
-     *
-     * @param message The message to send to server
-     * @param encrypt
-     * @throws javax.crypto.NoSuchPaddingException
-     */
-    public void sendMessage(String message) throws NoSuchPaddingException {
-        if (message.toUpperCase().contains("/SECRET")) {
-            String messageSplit = message.substring(message.toUpperCase().indexOf("/SECRET") + 7);
-            String messageSplitted[] = messageSplit.split(" ");
-            if (messageSplitted.length != 1) {
-                if (messageSplitted[1].toUpperCase().contains("ON")) {
-                    setSecret(true);
-                } else if (messageSplitted[1].toUpperCase().contains("OFF")) {
-                    setSecret(false);
-                } else {
-                    System.out.println("The command is incorrect");
-                }
+    public void setSecret(String message) {
+        String messageSplitted[] = message.split("/secret");
+        if (messageSplitted.length != 1) {
+            if (messageSplitted[1].toUpperCase().contains("ON")) {
+                this.cipherMessage = true;
+            } else if (messageSplitted[1].toUpperCase().contains("OFF")) {
+                this.cipherMessage = false;
+            } else {
+                System.out.println("The command is incorrect");
             }
-        }
-        if (cipherMessage) {
-            writer.println(encryption.encrypt(message) + "*secret*");
-        } else {
-            writer.println(message);
         }
     }
 
@@ -141,98 +147,222 @@ public class Client {
         try {
             line = reader.readLine();
         } catch (IOException ex) {
-            LOGGERCLIENT.log(Level.FINE, ex.toString(), ex);
+            LOGGER.log(Level.FINE, ex.toString(), ex);
             throw new ClientException("Error reading line.");
         }
-        if (line.contains("*secret*")) {
-            line = line.split("] ")[1];
-            line = line.substring(0, line.length() - 8);
-            line = encryption.decrypt(line);
+        // two bars to indicate the characters are literal
+
+        if (line.contains("*secret* ")) {
+            line = line.split("//*secret//* ")[1];
+            line = Encrypt.decrypt(line);
         }
         return line;
     }
 
-    public void setSecret(boolean secret) {
-        this.cipherMessage = secret;
-    }
-
-    public void run(int isClient) throws ClientException, InterruptedException, IOException, NoSuchAlgorithmException, NoSuchPaddingException {
-        boolean running = true;
-
-        // Stablish socket connection
-        while (running) {
-            try {
-                mySocket = stablishConnection();
-                running = false;
-            } catch (ClientException e) {
-                LOGGER.log(Level.SEVERE, e.toString(), e);
-            }
-        }
-
-        // Initialize new instance of Client named sender
-        try {
-            sender = new Client(mySocket);
-        } catch (ClientException e) {
-            LOGGER.log(Level.SEVERE, e.toString(), e);
-        }
+    public void run() {
 
         // Client authentication
-        logged = runAuthentication(isClient);
+        try {
+            logged = runAuthentication();
+        } catch (NoSuchPaddingException | InterruptedException | IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
-        // Client run
-        if (isClient == 1) {
+        if (logged) {
+            // Client run
+            messages.add("hola");
             // Initialize new instance of ListenThred name listener
-            try {
-                listener = new ListenThread(mySocket);
-            } catch (ClientException e) {
-                LOGGER.log(Level.SEVERE, e.toString(), e);
-            }
-
+            Thread listener = new Thread(listening);
             listener.start();
 
             // Initialize a subroutine for sending messages
-            entryMessageByUser();
+            Thread readInput = new Thread(Input);
+            readInput.start();
 
-            // Bot run
-        } else {
-            Bot myBot = new Bot(sender);
-            myBot.listeningMessages();
-        }
-
-        // Close scanner
-        sc.close();
-    }
-    
-    public Socket stablishConnection() throws ClientException, IOException {
-
-        String ip;
-        String port;
-
-        System.out.println("Introduce hostname:");
-        ip = "127.0.0.1";
-        //ip = sc.nextLine();
-        System.out.println("Introduce port:");
-        port = "49080";
-        //port = sc.nextLine();
-
-        if (port.matches("[0-9]+")) {
-            conct = new Connection(ip, Integer.parseInt(port));
-            mySocket = conct.connect();
-
-            // Check if socket is connected successfully
-            if (mySocket != null) {
-                if (mySocket.isConnected()) {
-                    return mySocket;
-                } else {
-                    throw new ClientException("Error: Socket connection could not be stablished.");
+            while (logged) {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
                 }
-            } else {
-                throw new ClientException("Error: Server is not running.");
+                ;
+
+                terminal.output(Integer.toString(messages.size()));
+
+                // while cola_de_mensajes no está vacía
+                while (messages.size() != 0) {
+                    terminal.output("[" + new Date() + "]: " + messages.poll());
+                    terminal.output("> ");
+                }
 
             }
-        } else {
-            throw new ClientException("Error: Incorrect port format.");
+            terminal.closeScanner();
         }
     }
-    
+
+    public void readingInput() throws NoSuchPaddingException {
+
+        System.out.print("> ");
+
+        // Check message mode
+        try {
+            msg = terminal.input();
+        } catch (NoSuchElementException e) {
+            LOGGER.log(Level.SEVERE, e.toString(), e);
+        }
+        /*
+         * var command = Command.parseCommand(msg);
+         * switch (command) {
+         * case EXIT:
+         * reading = false;
+         * exit();
+         * break;
+         * }
+         */
+        sendMessage(msg);
+
+    }
+
+    /**
+     * Send the message and current date from client to server
+     *
+     * @param message The message to send to server
+     * @param encrypt
+     * @throws javax.crypto.NoSuchPaddingException
+     */
+    public void sendMessage(String message) throws NoSuchPaddingException {
+        writer.println(message);
+    }
+
+    public void sendMessageSecret(String message, boolean cipherMessage) throws NoSuchPaddingException {
+        if (cipherMessage) {
+            message = "*secret* " + Encrypt.encrypt(message);
+        }
+        sendMessage(message);
+    }
+
+    public void exit() {
+        // Close socket connection
+        logged = false;
+        conct.close();
+        // Stop boolean variable and then, interrupt the thread execution
+        listener.stopThread();
+        listener.interrupt();
+    }
+
+    public boolean runAuthentication() throws InterruptedException, IOException, NoSuchPaddingException {
+        boolean serverAnswer = false;
+        String selectedOption = "";
+
+        try {
+            while (!serverAnswer) {
+                // Check if it is a client
+                optionLoginRegister();
+
+                try {
+                    selectedOption = terminal.input();
+                } catch (NoSuchElementException e) {
+                    LOGGER.log(Level.SEVERE, e.toString(), e);
+                }
+                // Checking selectedOption value
+                serverAnswer = registerLogin(selectedOption);
+            }
+        } catch (
+
+        ClientException CliExp) {
+            System.out.println(CliExp.getMessage());
+        }
+        return logged;
+    }
+
+    public boolean registerLogin(String selectedOption)
+            throws NoSuchPaddingException, InterruptedException, IOException, ClientException {
+        boolean serverAnswer = false;
+        switch (selectedOption.toLowerCase()) {
+            case "1" -> {
+                if (inputUsernamePassword("REGISTER")) {
+                    serverAnswer = true;
+                    logged = true;
+                }
+            }
+            case "2" -> {
+                if (inputUsernamePassword("LOGIN")) {
+                    serverAnswer = true;
+                    logged = true;
+                }
+            }
+            case "exit" -> {
+                serverAnswer = false;
+                logged = false;
+            }
+            default -> {
+                System.out.println("Incorrect option");
+                logged = false;
+            }
+        }
+        return serverAnswer;
+    }
+
+    public void optionLoginRegister() {
+        terminal.output("Choose an option.\n'exit' for end the application.");
+        terminal.output("1. Sign up");
+        terminal.output("2. Log in");
+    }
+
+    public boolean inputUsernamePassword(String mode)
+            throws InterruptedException, IOException, ClientException, NoSuchPaddingException {
+        String username;
+        String password;
+        boolean connect = false;
+
+        while (!connect) {
+            username = username();
+            if (username.equals("back")) {
+                return false;
+            }
+            password = password();
+            if (password.equals("back")) {
+                return false;
+            }
+            connect = sendCredentials(username, password, mode);
+            if (!connect) {
+                terminal.output("The username or password are incorrect, please try again or 'back' to return back");
+            }
+        }
+        return connect;
+    }
+
+    public String username() {
+        terminal.output("Username: ");
+        return terminal.input();
+    }
+
+    public String password() {
+        terminal.output("Password :");
+        return terminal.input();
+    }
+
+    public boolean sendCredentials(String username, String password, String mode)
+            throws IOException, ClientException, InterruptedException, NoSuchPaddingException {
+        // Server asks for username
+        getMessage();
+        sendMessage(mode);
+        String server_message = getMessage();
+        if (server_message.toUpperCase().trim().equals("USER:")) {
+            sendMessage(username);
+        }
+
+        // Server asks for password
+        server_message = getMessage();
+        if (server_message.toUpperCase().trim().equals("PASSWORD:")) {
+            sendMessage(password);
+        }
+
+        // Server answers 'successful' or 'Error'
+        server_message = getMessage();
+        return server_message.trim().toUpperCase().equals("SUCCESSFUL");
+    }
+
 }

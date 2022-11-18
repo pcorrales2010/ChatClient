@@ -9,6 +9,8 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.curso.exceptions.ClientException;
+
 /**
  * Class that connects a Client to a Server.
  *
@@ -20,7 +22,7 @@ public class Connection {
 
     private String host = "";
     private int port;
-    private Socket mySocket;
+    private Socket socket;
     private final static Logger LOGGER = Logger.getLogger(Connection.class.getName());
 
     /**
@@ -30,6 +32,22 @@ public class Connection {
         host = "192.168.3.102";
         port = 2525;
         LOGGER.setLevel(Level.ALL);
+    }
+
+    public Socket stablishConnection(String ip, String port) throws ClientException, IOException {
+
+        socket = connect();
+        // Check if socket is connected successfully
+        if (socket != null) {
+            if (socket.isConnected()) {
+                return socket;
+            } else {
+                throw new ClientException("Error: Socket connection could not be stablished.");
+            }
+        } else {
+            throw new ClientException("Error: Server is not running.");
+
+        }
     }
 
     /**
@@ -50,15 +68,15 @@ public class Connection {
      * @param newSocket .
      */
     public Connection(Socket newSocket) {
-        mySocket = newSocket;
+        socket = newSocket;
     }
-    
+
     /**
      * 
-     * @return 
+     * @return
      */
     public Socket getMySocket() {
-        return mySocket;
+        return socket;
     }
 
     /**
@@ -81,10 +99,10 @@ public class Connection {
 
     /**
      * 
-     * @param mySocket 
+     * @param mySocket
      */
     public void setMySocket(Socket mySocket) {
-        this.mySocket = mySocket;
+        this.socket = mySocket;
     }
 
     /**
@@ -93,16 +111,16 @@ public class Connection {
      * @return Sockt that client is gonna use for the connection.
      */
     public Socket connect() {
-        if (mySocket == null) {
+        if (socket == null) {
             try {
-                mySocket = new Socket(getHost(), getPort());
+                socket = new Socket(getHost(), getPort());
 
             } catch (SecurityException | IllegalArgumentException | IOException ex) {
                 LOGGER.log(Level.SEVERE, ex.toString(), ex);
             }
 
         }
-        return mySocket;
+        return socket;
     }
 
     /**
@@ -110,9 +128,9 @@ public class Connection {
      * @return true if the socket was able to be closed.
      */
     public boolean close() {
-        if (mySocket != null) {
+        if (socket != null) {
             try {
-                mySocket.close();
+                socket.close();
                 return true;
             } catch (SecurityException | IllegalArgumentException | IOException ex) {
                 LOGGER.log(Level.SEVERE, ex.toString(), ex);

@@ -38,7 +38,7 @@ public class Client {
     BufferedReader reader;
     private final static Logger LOGGERCLIENT = Logger.getLogger(Client.class.getName());
 
-    Encrypt encryption = new Encrypt();
+    Encrypt encryption = new Encrypt("secret");
     boolean cipherMessage;
 
     /**

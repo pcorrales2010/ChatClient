@@ -32,7 +32,6 @@ public class ListenThread extends Thread {
      * @throws com.curso.exceptions.ClientException
      */
     public ListenThread(Socket soc) throws ClientException, NoSuchAlgorithmException {
-        this.date = new Date();
         this.client = new Client(soc);
         this.stop = false;
         LOGGER.setLevel(Level.ALL);
@@ -55,7 +54,8 @@ public class ListenThread extends Thread {
         while (!this.stop) {
 
             try {
-                System.out.println("[" + this.date + "]: " + client.getMessage());
+                System.out.println("[" + new Date() + "]: " + client.getMessage());
+                System.out.println("> ");
 
                 //Bot myBot = new Bot(this.client);
                 //myBot.listeningMessages();

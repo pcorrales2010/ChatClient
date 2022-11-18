@@ -41,7 +41,7 @@ public class Interface {
     }
 
     /**
-     * 
+     *
      */
     public void entryMessageByUser() throws NoSuchPaddingException {
 
@@ -146,29 +146,31 @@ public class Interface {
 
         // Client authentication
         logged = runAuthentication(isClient);
+        
+        if (logged) {
+            // Client run
+            if (isClient == 1) {
+                // Initialize new instance of ListenThred name listener
+                try {
+                    listener = new ListenThread(mySocket);
+                } catch (ClientException e) {
+                    LOGGER.log(Level.SEVERE, e.toString(), e);
+                }
 
-        // Client run
-        if (isClient == 1) {
-            // Initialize new instance of ListenThred name listener
-            try {
-                listener = new ListenThread(mySocket);
-            } catch (ClientException e) {
-                LOGGER.log(Level.SEVERE, e.toString(), e);
+                listener.start();
+
+                // Initialize a subroutine for sending messages
+                entryMessageByUser();
+
+                // Bot run
+            } else {
+                Bot myBot = new Bot(sender);
+                myBot.listeningMessages();
             }
 
-            listener.start();
-
-            // Initialize a subroutine for sending messages
-            entryMessageByUser();
-
-            // Bot run
-        } else {
-            Bot myBot = new Bot(sender);
-            myBot.listeningMessages();
+            // Close scanner
+            sc.close();
         }
-
-        // Close scanner
-        sc.close();
     }
 
     /**
@@ -250,19 +252,32 @@ public class Interface {
     public boolean inputUsernamePassword(String mode, int isClient) throws InterruptedException, IOException, ClientException, NoSuchPaddingException {
         String username;
         String password;
+        boolean connect = false;
 
-        if (isClient == 1) {
-            System.out.print("Username: ");
-            username = sc.nextLine();
-            System.out.print("Password: ");
-            password = sc.nextLine();
-        } else {
-            Thread.sleep(500);
-            username = "bot";
-            Thread.sleep(500);
-            password = "bot";
+        while (!connect) {
+            if (isClient == 1) {
+                System.out.print("Username: ");
+                username = sc.nextLine();
+                if (username.equals("exit")) {
+                    return false;
+                }
+                System.out.print("Password: ");
+                password = sc.nextLine();
+                if (password.equals("exit")) {
+                    return false;
+                }
+            } else {
+                Thread.sleep(500);
+                username = "bot";
+                Thread.sleep(500);
+                password = "bot";
+            }
+            connect = sendCredentials(username, password, mode);
+            if (!connect) {
+                System.out.println("The username or password are incorrect, please try again or 'exit' to return back");
+            }
         }
-        return sendCredentials(username, password, mode);
+        return connect;
     }
 
     public boolean sendCredentials(String username, String password, String mode) throws IOException, ClientException, InterruptedException, NoSuchPaddingException {
@@ -283,56 +298,5 @@ public class Interface {
         // Server answers 'successful' or 'Error'
         server_message = sender.getMessage();
         return server_message.trim().toUpperCase().equals("SUCCESSFUL");
-    }
-
-    /**
-     * Get Secure Password that receives a password introduced by an user for
-     * hashing the user password.
-     *
-     * @param passwordToHash
-     * @return A hashed password
-     */
-    public String getSecurePassword(String passwordToHash) {
-        String generatedPassword = null;
-        String salt = null;
-        try {
-            salt = getSalt();
-        } catch (NoSuchAlgorithmException e) {
-            LOGGER.log(Level.FINE, e.toString(), e);
-        } catch (NoSuchProviderException e) {
-            LOGGER.log(Level.FINE, e.toString(), e);
-        }
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-
-            // Add password bytes to digest
-            md.update(salt.getBytes());
-
-            // Get the hash's bytes
-            byte[] bytes = md.digest(passwordToHash.getBytes());
-            StringBuilder sb = new StringBuilder();
-
-            for (int i = 0; i < bytes.length; i++) {
-                sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
-            }
-
-            generatedPassword = sb.toString();
-        } catch (NoSuchAlgorithmException e) {
-            LOGGER.log(Level.FINE, e.toString(), e);
-        }
-        return generatedPassword;
-    }
-
-    /**
-     * This salt is pruposed to add complexity to the key
-     *
-     * @return A chain of bytes in String type variable.
-     * @throws NoSuchProviderException
-     */
-    public String getSalt() throws NoSuchAlgorithmException, NoSuchProviderException {
-        SecureRandom sr = SecureRandom.getInstance("SHA1PRNG", "SUN");
-        byte[] salt = new byte[16];
-        sr.nextBytes(salt);
-        return salt.toString();
     }
 }

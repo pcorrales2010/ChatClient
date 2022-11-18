@@ -5,11 +5,11 @@
 package com.curso.chatclient;
 
 import com.curso.exceptions.ClientException;
+import java.net.Socket;
+import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.Month;
 import java.util.Random;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.crypto.NoSuchPaddingException;
 
@@ -17,23 +17,21 @@ import javax.crypto.NoSuchPaddingException;
  *
  * @author juacuadr
  */
-public class Bot {
+public class Bot extends Client {
 
     private final static Logger LOGGER = Logger.getLogger(Interface.class.getName());
 
-    private Client botClient;
     private boolean runningBot;
 
-    public Bot(Client newClient) {
-        this.botClient = newClient;
-        this.runningBot = true;
+    public Bot(Socket newSocket) throws ClientException, NoSuchAlgorithmException {
+        super(newSocket);
     }
 
     public void listeningMessages() throws ClientException, NoSuchPaddingException {
 
         while (runningBot) {
 
-            String msgReaded = botClient.getMessage();
+            String msgReaded = getMessage();
             System.out.println(msgReaded);
             String code = decodingMessage(msgReaded);
             System.out.println(code);
@@ -69,7 +67,7 @@ public class Bot {
                 }
                 // Sending message response
                 if (!"".equals(res)) {
-                    botClient.sendMessage(res);
+                    sendMessage(res);
                 }
             }
         }

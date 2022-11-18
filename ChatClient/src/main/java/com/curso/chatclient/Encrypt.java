@@ -30,10 +30,9 @@ public class Encrypt {
 
     private static SecretKeySpec secretKey;
     private static byte[] key;
-    private static final String myKey = "secret";
-
-    public Encrypt() {
-        setKey(myKey);
+    
+    public Encrypt(String mykey) {
+        setKey(mykey);
     }
 /*
     private static String randomMykey() {

@@ -11,6 +11,9 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.crypto.NoSuchPaddingException;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import static org.mockito.Mockito.times;
@@ -36,9 +39,10 @@ public class ClientTest {
      * Test of Send Message method by using Mockito.
      *
      * @throws IOException when an I/O error occurs.
+     * @throws NoSuchPaddingException
      */
     @Test
-    public void testSendMessage() throws IOException {
+    public void testSendMessage() throws IOException, NoSuchPaddingException {
         // GIVEN
         Socket testSocket = Mockito.mock(Socket.class);
         BufferedReader testReader = Mockito.mock(BufferedReader.class);

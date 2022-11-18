@@ -15,8 +15,7 @@ import javax.crypto.NoSuchPaddingException;
  */
 public class MainBot {
     public static void main(String[] args) throws ClientException, InterruptedException, NoSuchAlgorithmException, IOException, NoSuchPaddingException {
-        Interface menu = new Interface();
-        
+        Bot bot = new Bot(newSocket);
         // Run for a client
         menu.run(0);
     }
