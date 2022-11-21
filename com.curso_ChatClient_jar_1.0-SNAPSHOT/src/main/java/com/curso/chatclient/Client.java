@@ -32,12 +32,11 @@ public class Client implements Runnable {
     BufferedReader reader;
 
     Encrypt encryption = new Encrypt();
-    boolean cipherMessage;
+    boolean cipherMessage = false;
 
     protected String message = null;
     protected boolean logged = false;
     protected ArrayDeque<String> messages = new ArrayDeque<String>();
-    private String msg = null;
     private Socket socket;
     Connection conct;
     protected Interface terminal;
@@ -188,33 +187,34 @@ public class Client implements Runnable {
     }
 
     public void readingInput() throws NoSuchPaddingException {
-
+        boolean commands = false;
         // Check message mode
-        try {
-            msg = terminal.input();
-            terminal.outputLine("> ");
+        if (cipherMessage) {
+            message = terminal.input();
+        } else
+            message = terminal.input();
+        terminal.outputLine("> ");
 
-        } catch (NoSuchElementException e) {
-            LOGGER.log(Level.SEVERE, e.toString(), e);
-        }
-
-        var command = Command.parseCommand(msg);
+        var command = Command.parseCommand(message);
         switch (command) {
             case EXIT:
                 try {
                     exit();
+                    commands = true;
                 } catch (IOException ex) {
                     LOGGER.log(Level.FINE, ex.toString(), ex);
                 }
                 break;
             case SECRET:
-                setSecret(msg);
+                setSecret(message);
+                commands = true;
                 break;
             case NOOP:
                 break;
         }
-
-        sendMessageSecret(msg,cipherMessage);
+        if (!commands) {
+            sendMessageSecret(message);
+        }
 
     }
 
@@ -229,7 +229,7 @@ public class Client implements Runnable {
         writer.println(message);
     }
 
-    public void sendMessageSecret(String message, boolean cipherMessage) throws NoSuchPaddingException {
+    public void sendMessageSecret(String message) throws NoSuchPaddingException {
         if (cipherMessage) {
             message = "*secret* " + Encrypt.encrypt(message);
         }
@@ -257,9 +257,7 @@ public class Client implements Runnable {
                 // Checking selectedOption value
                 serverAnswer = registerLogin(selectedOption);
             }
-        } catch (
-
-        ClientException CliExp) {
+        } catch (ClientException CliExp) {
             System.out.println(CliExp.getMessage());
         }
         return serverAnswer;

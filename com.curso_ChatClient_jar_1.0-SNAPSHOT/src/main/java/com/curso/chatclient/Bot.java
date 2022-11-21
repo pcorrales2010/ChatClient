@@ -54,34 +54,62 @@ public class Bot extends Client {
     public void run() {
 
         // Client authentication
+        while (!logged) {
             try {
                 logged = sendCredentials("bot", "bot", "LOGIN");
-            } catch (NoSuchPaddingException | InterruptedException | IOException e1) {
+
+            } catch (ClientException | NoSuchPaddingException | IOException | InterruptedException e) {
                 // TODO Auto-generated catch block
-                e1.printStackTrace();
-            }       
-
-        if (logged) {
-            terminal.outputLine("> ");
-
-            // Initialize a subroutine for receiving messages
-            Thread listener = new Thread(listening);
-            listener.start();
-
-            while (logged) {
+                e.printStackTrace();
+            }
+            if (!logged) {
                 try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
+                    logged = sendCredentials("bot", "bot", "REGISTER");
+                } catch (NoSuchPaddingException | IOException | ClientException | InterruptedException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-                // while cola_de_mensajes no está vacía
-                while (!messages.isEmpty()) {
-                    String message = messages.poll();
-                    terminal.output(message);
-                    terminal.outputLine("> ");
-                    
+            }
+        }
+
+        // Initialize a subroutine for receiving messages
+        Thread listener = new Thread(listening);
+        listener.start();
+
+        while (logged) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            // while cola_de_mensajes no está vacía
+            while (!messages.isEmpty()) {
+                String message = messages.poll();
+                if (message != null)
+                    message = message.split("] ")[1];
+                var command = Command.parseCommand(message);
+                switch (command) {
+                    case MENU:
+                        botMenu();
+                        break;
+                    case DUMB:
+                        dumb();
+                        break;
+                    case COMPATIBILITY:
+                        compatibility();
+                        break;
+                    case HEADORTAILS:
+                        headsOrTails();
+                        break;
+                    case DEATHDATE:
+                        deathDate();
+                        break;
+                    case NOOP:
+                        break;
                 }
+                terminal.output(message);
+                terminal.outputLine("> ");
 
             }
             listener.interrupt();
@@ -90,70 +118,40 @@ public class Bot extends Client {
         }
     }
 
-    public void listeningMessages() throws ClientException, NoSuchPaddingException {
-
-        while (runningBot) {
-
-            String msgReaded = getMessage();
-            System.out.println(msgReaded);
-            String code = decodingMessage(msgReaded);
-            System.out.println(code);
-            String res = "";
-
-            if (code != null) {
-
-                switch (code) {
-                    // Showing menu
-                    case "/MENU":
-                        res = botMenu();
-                        break;
-
-                    // Dumb option
-                    case "/DUMB":
-                        res = dumb();
-                        break;
-
-                    // Compatibility option
-                    case "/COMPATIBILITY":
-                        res = compatibility();
-                        break;
-
-                    // Death date
-                    case "/DEATHDATE":
-                        res = deathDate();
-                        break;
-
-                    // Head or tail
-                    case "/HEADSORTAILS":
-                        res = headsOrTails();
-                        break;
-                }
-                // Sending message response
-                if (!"".equals(res)) {
-                    sendMessage(res);
-                }
-            }
-        }
-    }
-
-    public String decodingMessage(String msg) {
-        String[] splitted = msg.split("] ");
+    public String decodingMessage(String message) {
+        String[] splitted = message.split("] ");
         return splitted[1];
     }
 
-    public String botMenu() {
-        return "ChatBot menu: /DUMB, /COMPATIBILITY, /DEATHDATE or /HEADSORTAILS";
+    public void botMenu() {
+        try {
+            sendMessage("ChatBot menu: /DUMB, /COMPATIBILITY, /DEATHDATE or /HEADSORTAILS");
+        } catch (NoSuchPaddingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
-    public String dumb() {
-        return "You are " + new Random().nextInt(11) + " dumb on the international dumb scale. Congratulations";
+    public void dumb() {
+        try {
+            sendMessage(
+                    "You are " + new Random().nextInt(11) + " dumb on the international dumb scale. Congratulations");
+        } catch (NoSuchPaddingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
-    public String compatibility() {
-        return "You are " + new Random().nextInt(101) + "% compatible with java";
+    public void compatibility() {
+        try {
+            sendMessage("You are " + new Random().nextInt(101) + "% compatible with java");
+        } catch (NoSuchPaddingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
-    public String deathDate() {
+    public void deathDate() {
         Random random = new Random();
         LocalDate date = LocalDate.now();
         LocalDate deathDate;
@@ -163,17 +161,28 @@ public class Bot extends Client {
         Duration diff = Duration.between(date.atStartOfDay(), deathDate.atStartOfDay());
         long diffDays = diff.toDays();
 
-        return "You have " + diffDays / 360 + " years to live";
+        try {
+            sendMessage("You have " + diffDays / 360 + " years to live");
+        } catch (NoSuchPaddingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
     }
 
-    public String headsOrTails() {
+    public void headsOrTails() {
         Random random = new Random();
+        String headortails;
 
         if (random.nextInt(2) == 0) {
-            return "head";
-        }
-
-        return "tail";
+            headortails = "head";
+        } else
+            headortails = "tail";
+            try {
+                sendMessage(headortails);
+            } catch (NoSuchPaddingException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
     }
 }
