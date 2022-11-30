@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.http.WebSocket.Listener;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.ArrayDeque;
@@ -45,7 +46,8 @@ public class Client implements Runnable {
 
         @Override
         public void run() {
-            while (logged) {
+            //while (logged) {
+                while (true) {                    
                 try {
                     messages.add(getMessage());
                 } catch (ClientException e) {
@@ -55,6 +57,7 @@ public class Client implements Runnable {
         }
     };
 
+    
     Runnable Input = new Runnable() {
         @Override
         public void run() {
@@ -68,7 +71,8 @@ public class Client implements Runnable {
             }
         }
     };
-
+    
+    
     /**
      * Constructor that receive a Socket and fill writer and reader private
      * variables.
@@ -88,7 +92,7 @@ public class Client implements Runnable {
             terminal = new Interface();
 
             try {
-                output = newSocket.getOutputStream();
+                output = socket.getOutputStream();
             } catch (IOException ex) {
                 throw new ClientException("Error creating the output stream: the socket could not be connected");
             }
@@ -135,10 +139,9 @@ public class Client implements Runnable {
             throw new ClientException("Error reading line.");
         }
 
-        if (line.contains("*secret* ")) {
-            // two bars to indicate the characters are literal
-            line = line.split("//*secret//* ")[1];
-            line = Encrypt.decrypt(line);
+        if (line.contains("'secret' ")) {
+            String[] arrayString = line.split("\'secret\' ");
+            line = arrayString[0] + Encrypt.decrypt(arrayString[1]);
         }
         return line;
     }
@@ -167,9 +170,9 @@ public class Client implements Runnable {
             while (logged) {
                 try {
                     Thread.sleep(500);
-                } catch (InterruptedException e) {
+                } catch (InterruptedException ex) {
                     // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    ex.printStackTrace();
                 }
                 // while cola_de_mensajes no está vacía
                 while (!messages.isEmpty()) {
@@ -186,14 +189,9 @@ public class Client implements Runnable {
         }
     }
 
-    public void readingInput() throws NoSuchPaddingException {
+    public void readingInput(String message) throws NoSuchPaddingException {
         boolean commands = false;
-        // Check message mode
-        if (cipherMessage) {
-            message = terminal.input();
-        } else
-            message = terminal.input();
-        terminal.outputLine("> ");
+        //message = terminal.input();
 
         var command = Command.parseCommand(message);
         switch (command) {
@@ -207,6 +205,43 @@ public class Client implements Runnable {
                 break;
             case SECRET:
                 setSecret(message);
+                commands = true;
+                break;
+            case JOIN:
+                sendMessage(message);
+                commands = true;
+                break;
+            case NOOP:
+                break;
+        }
+        if (!commands) {
+            sendMessageSecret(message);
+        }
+
+    }
+
+    public void readingInput() throws NoSuchPaddingException {
+        boolean commands = false;
+        // Check message mode
+
+        message = terminal.input();
+
+        var command = Command.parseCommand(message);
+        switch (command) {
+            case EXIT:
+                try {
+                    exit();
+                    commands = true;
+                } catch (IOException ex) {
+                    LOGGER.log(Level.FINE, ex.toString(), ex);
+                }
+                break;
+            case SECRET:
+                setSecret(message);
+                commands = true;
+                break;
+            case JOIN:
+                sendMessage(message);
                 commands = true;
                 break;
             case NOOP:
@@ -231,7 +266,7 @@ public class Client implements Runnable {
 
     public void sendMessageSecret(String message) throws NoSuchPaddingException {
         if (cipherMessage) {
-            message = "*secret* " + Encrypt.encrypt(message);
+            message = "'secret' " + Encrypt.encrypt(message);
         }
         sendMessage(message);
     }

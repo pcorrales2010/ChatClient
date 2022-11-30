@@ -4,10 +4,15 @@
  */
 package com.curso.chatclient;
 
+import static org.mockito.ArgumentMatchers.matches;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.CheckedInputStream;
 
 import com.curso.exceptions.ClientException;
 
@@ -34,7 +39,7 @@ public class Connection {
         LOGGER.setLevel(Level.ALL);
     }
 
-    public Socket stablishConnection(String ip, String port) throws ClientException, IOException {
+    public Socket stablishConnection() throws ClientException, IOException {
 
         socket = connect();
         // Check if socket is connected successfully
@@ -139,4 +144,16 @@ public class Connection {
         }
         return false;
     }
+
+    public static boolean checkIp(String ip) {
+        String regex = "((\\d{1,2}|(0|1)\\"
+                + "d{2}|2[0-4]\\d|25[0-5])\\.){3}"
+                + "(\\d{1,2}|(0|1)\\d{2}|2[0-4]\\d|25[0-5])";
+        return ip.matches(regex);
+    }
+
+    public static boolean checkPort(String port) {
+        return port.matches("[0-9]+");
+    }
+
 }

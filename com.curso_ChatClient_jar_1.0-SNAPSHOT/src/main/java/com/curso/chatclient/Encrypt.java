@@ -13,24 +13,21 @@ package com.curso.chatclient;
  *
  * @author pcorrales2010
  */
-import com.curso.exceptions.ClientException;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Random;
-
 import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
 public class Encrypt {
 
     private static SecretKeySpec secretKey;
     private static byte[] key;
+    //mirar mas adelante
     private static final String myKey = "secret";
+
     
     public Encrypt() {      
     }

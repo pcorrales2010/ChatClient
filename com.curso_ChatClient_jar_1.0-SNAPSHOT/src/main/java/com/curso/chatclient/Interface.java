@@ -17,7 +17,6 @@ public class Interface {
 
     private final static Logger LOGGER = Logger.getLogger(Interface.class.getName());
     private Scanner sc;
-    private Logger log;
 
     public Interface() {
         sc = new Scanner(System.in);

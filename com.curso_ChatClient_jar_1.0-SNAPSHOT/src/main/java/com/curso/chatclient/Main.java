@@ -38,12 +38,13 @@ public class Main {
                 terminal.output("Introduce port:");
                 port = terminal.input();
 
+                //validar ip
                 if (port.matches("[0-9]+")) {
                     conct = new Connection(ip, Integer.parseInt(port));
                 } else {
                     throw new ClientException("Error: Incorrect port format.");
                 }
-                socket = conct.stablishConnection(ip, port);
+                socket = conct.stablishConnection();
                 running = false;
             } catch (ClientException e) {
                 LOGGER.log(Level.SEVERE, e.toString(), e);

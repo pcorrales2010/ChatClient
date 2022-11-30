@@ -18,6 +18,7 @@ public enum Command {
     DEATHDATE("/deathdate"),
     HEADORTAILS("/headortails"),
     EXIT("/exit"),
+    JOIN("/join"),
     NOOP("");
 
     private String value;

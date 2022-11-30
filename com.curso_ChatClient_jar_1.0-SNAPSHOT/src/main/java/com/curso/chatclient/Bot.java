@@ -11,7 +11,6 @@ import java.net.Socket;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.Random;
 import java.util.logging.Logger;
 import javax.crypto.NoSuchPaddingException;
@@ -178,11 +177,12 @@ public class Bot extends Client {
             headortails = "head";
         } else
             headortails = "tail";
-            try {
-                sendMessage(headortails);
-            } catch (NoSuchPaddingException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+        try {
+            sendMessage(headortails);
+        } catch (NoSuchPaddingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
+    //documentacion de clasese
 }
