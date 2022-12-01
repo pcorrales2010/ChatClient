@@ -4,10 +4,17 @@
  */
 package com.curso.chatclient;
 
+import static org.mockito.ArgumentMatchers.matches;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.CheckedInputStream;
+
+import com.curso.exceptions.ClientException;
 
 /**
  * Class that connects a Client to a Server.
@@ -20,17 +27,9 @@ public class Connection {
 
     private String host = "";
     private int port;
-    private Socket mySocket;
+    private Socket socket;
     private final static Logger LOGGER = Logger.getLogger(Connection.class.getName());
 
-    /**
-     * Default Constructor it assign the default host and port.
-     */
-    public Connection() {
-        host = "192.168.3.102";
-        port = 2525;
-        LOGGER.setLevel(Level.ALL);
-    }
 
     /**
      * Constructor to change values of host and port.
@@ -44,21 +43,37 @@ public class Connection {
         LOGGER.setLevel(Level.ALL);
     }
 
+    public Socket stablishConnection() throws ClientException, IOException {
+
+        socket = connect();
+        // Check if socket is connected successfully
+        if (socket != null) {
+            if (socket.isConnected()) {
+                return socket;
+            } else {
+                throw new ClientException("Error: Socket connection could not be stablished.");
+            }
+        } else {
+            throw new ClientException("Error: Server is not running.");
+
+        }
+    }
+
     /**
      * Constructor to creare a new object given a socket .
      *
      * @param newSocket .
      */
     public Connection(Socket newSocket) {
-        mySocket = newSocket;
+        socket = newSocket;
     }
-    
+
     /**
      * 
-     * @return 
+     * @return
      */
     public Socket getMySocket() {
-        return mySocket;
+        return socket;
     }
 
     /**
@@ -81,10 +96,10 @@ public class Connection {
 
     /**
      * 
-     * @param mySocket 
+     * @param mySocket
      */
     public void setMySocket(Socket mySocket) {
-        this.mySocket = mySocket;
+        this.socket = mySocket;
     }
 
     /**
@@ -93,16 +108,16 @@ public class Connection {
      * @return Sockt that client is gonna use for the connection.
      */
     public Socket connect() {
-        if (mySocket == null) {
+        if (socket == null) {
             try {
-                mySocket = new Socket(getHost(), getPort());
+                socket = new Socket(getHost(), getPort());
 
             } catch (SecurityException | IllegalArgumentException | IOException ex) {
                 LOGGER.log(Level.SEVERE, ex.toString(), ex);
             }
 
         }
-        return mySocket;
+        return socket;
     }
 
     /**
@@ -110,9 +125,9 @@ public class Connection {
      * @return true if the socket was able to be closed.
      */
     public boolean close() {
-        if (mySocket != null) {
+        if (socket != null) {
             try {
-                mySocket.close();
+                socket.close();
                 return true;
             } catch (SecurityException | IllegalArgumentException | IOException ex) {
                 LOGGER.log(Level.SEVERE, ex.toString(), ex);
@@ -121,4 +136,16 @@ public class Connection {
         }
         return false;
     }
+
+    public static boolean checkIp(String ip) {
+        String regex = "((\\d{1,2}|(0|1)\\"
+                + "d{2}|2[0-4]\\d|25[0-5])\\.){3}"
+                + "(\\d{1,2}|(0|1)\\d{2}|2[0-4]\\d|25[0-5])";
+        return ip.matches(regex);
+    }
+
+    public static boolean checkPort(String port) {
+        return port.matches("[0-9]+");
+    }
+
 }

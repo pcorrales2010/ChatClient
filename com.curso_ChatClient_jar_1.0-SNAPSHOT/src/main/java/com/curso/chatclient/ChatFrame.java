@@ -27,7 +27,7 @@ public class ChatFrame {
                     // TODO: handle exception
                 }
                 while (!sender.messages.isEmpty()) {
-                    messageOutput = "> " + "[" + new Date() + "]: " + sender.messages.poll().trim() + "\n";
+                    messageOutput = "< " + "[" + new Date() + "]: " + sender.messages.poll().trim() + "\n";
                     textAreaOutput.append(messageOutput);
                 }
             }
@@ -46,6 +46,7 @@ public class ChatFrame {
 
         textAreaOutput = new JTextArea();
         textAreaOutput.setFont(new Font("Verdana", Font.PLAIN, 12));
+        textAreaOutput.setEditable(false);
 
         JScrollPane scrollableTextArea1 = new JScrollPane(textAreaOutput);
         scrollableTextArea1.setBounds(10, 10, 600, 450);

@@ -13,44 +13,25 @@ package com.curso.chatclient;
  *
  * @author pcorrales2010
  */
-import com.curso.exceptions.ClientException;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Random;
-
 import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
 public class Encrypt {
 
     private static SecretKeySpec secretKey;
     private static byte[] key;
+    //mirar mas adelante
+    private static final String myKey = "secret";
+
     
-    public Encrypt(String mykey) {
-        setKey(mykey);
+    public Encrypt() {      
     }
-/*
-    private static String randomMykey() {
-        String a = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                + "abcdefghijklmnopqrstuvwxyz"
-                + "0123456789";
-        Random random = new Random();
-        String myKey = "";
 
-        for (int m = 0; m < 10; m++) {
-
-            // generate numeric
-            int myindex = random.nextInt(a.length());
-            myKey = myKey + a.charAt(myindex);
-        }
-        return myKey;
-    }
-*/
     public static void setKey(String myKey) {
         MessageDigest sha = null;
         try {
@@ -65,6 +46,7 @@ public class Encrypt {
     }
 
     public static String encrypt(final String strToEncrypt) {
+        setKey(myKey);
         try {
             Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
@@ -77,6 +59,7 @@ public class Encrypt {
     }
 
     public static String decrypt(final String strToDecrypt) {
+        setKey(myKey);
         try {
             Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5PADDING");
             cipher.init(Cipher.DECRYPT_MODE, secretKey);

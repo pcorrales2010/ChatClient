@@ -37,7 +37,7 @@ public class MainBot {
                 port = "49080";
               
                 conct = new Connection(ip, Integer.parseInt(port));
-                socket = conct.stablishConnection(ip, port);
+                socket = conct.stablishConnection();
                 running = false;
             } catch (ClientException e) {
                 LOGGER.log(Level.SEVERE, e.toString(), e);

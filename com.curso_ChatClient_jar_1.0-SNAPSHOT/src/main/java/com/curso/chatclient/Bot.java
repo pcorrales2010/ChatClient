@@ -108,8 +108,6 @@ public class Bot extends Client {
                         break;
                 }
                 terminal.output(message);
-                terminal.outputLine("> ");
-
             }
             listener.interrupt();
 

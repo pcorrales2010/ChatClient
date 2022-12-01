@@ -30,12 +30,16 @@ public class Connection {
     private Socket socket;
     private final static Logger LOGGER = Logger.getLogger(Connection.class.getName());
 
+
     /**
-     * Default Constructor it assign the default host and port.
+     * Constructor to change values of host and port.
+     *
+     * @param host.
+     * @param port.
      */
-    public Connection() {
-        host = "192.168.3.102";
-        port = 2525;
+    public Connection(String host, int port) {
+        this.host = host;
+        this.port = port;
         LOGGER.setLevel(Level.ALL);
     }
 
@@ -53,18 +57,6 @@ public class Connection {
             throw new ClientException("Error: Server is not running.");
 
         }
-    }
-
-    /**
-     * Constructor to change values of host and port.
-     *
-     * @param host.
-     * @param port.
-     */
-    public Connection(String host, int port) {
-        this.host = host;
-        this.port = port;
-        LOGGER.setLevel(Level.ALL);
     }
 
     /**

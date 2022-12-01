@@ -39,7 +39,7 @@ public class Main {
                 port = terminal.input();
 
                 //validar ip
-                if (port.matches("[0-9]+")) {
+                if (Connection.checkPort(port) && Connection.checkIp(ip)) {
                     conct = new Connection(ip, Integer.parseInt(port));
                 } else {
                     throw new ClientException("Error: Incorrect port format.");

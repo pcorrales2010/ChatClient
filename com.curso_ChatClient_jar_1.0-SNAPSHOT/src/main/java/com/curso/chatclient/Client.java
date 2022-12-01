@@ -101,9 +101,8 @@ public class Client implements Runnable {
                 writer = new PrintWriter(output, true);
                 input = socket.getInputStream();
             } catch (SecurityException | IllegalArgumentException | IOException ex) {
-                LOGGER.log(Level.FINE, ex.toString(), ex);
-                throw new ClientException(
-                        "Error creating the input stream: The socket is closed, not connected or the input has been shutdown");
+                LOGGER.log(Level.FINE, ex.toString(), ex);                
+                throw new ClientException("Error creating the input stream: The socket is closed, not connected or the input has been shutdown");
             }
 
             reader = new BufferedReader(new InputStreamReader(input));
