@@ -12,7 +12,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.http.WebSocket.Listener;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.ArrayDeque;
@@ -46,12 +45,12 @@ public class Client implements Runnable {
 
         @Override
         public void run() {
-            //while (logged) {
-                while (true) {                    
+                while (logged) {                    
                 try {
                     messages.add(getMessage());
-                } catch (ClientException e) {
-                    e.printStackTrace();
+                } catch (ClientException ex) {
+                    logged = false;
+                    LOGGER.log(Level.SEVERE, ex.toString(), ex);                     
                 }
             }
         }
@@ -64,9 +63,8 @@ public class Client implements Runnable {
             while (logged) {
                 try {
                     readingInput();
-                } catch (NoSuchPaddingException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                } catch (NoSuchPaddingException ex) {
+                    LOGGER.log(Level.SEVERE, ex.toString(), ex); 
                 }
             }
         }
@@ -94,6 +92,7 @@ public class Client implements Runnable {
             try {
                 output = socket.getOutputStream();
             } catch (IOException ex) {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex); 
                 throw new ClientException("Error creating the output stream: the socket could not be connected");
             }
 
@@ -101,7 +100,7 @@ public class Client implements Runnable {
                 writer = new PrintWriter(output, true);
                 input = socket.getInputStream();
             } catch (SecurityException | IllegalArgumentException | IOException ex) {
-                LOGGER.log(Level.FINE, ex.toString(), ex);                
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);                
                 throw new ClientException("Error creating the input stream: The socket is closed, not connected or the input has been shutdown");
             }
 
@@ -146,51 +145,10 @@ public class Client implements Runnable {
     }
 
     public void run() {
-
-        // Client authentication
-        try {
-            logged = runAuthentication();
-        } catch (NoSuchPaddingException | InterruptedException | IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
-
-        if (logged) {
-            terminal.outputLine("> ");
-
-            // Initialize a subroutine for receiving messages
-            Thread listener = new Thread(listening);
-            listener.start();
-
-            // Initialize a subroutine for sending messages
-            Thread readInput = new Thread(Input);
-            readInput.start();
-
-            while (logged) {
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException ex) {
-                    // TODO Auto-generated catch block
-                    ex.printStackTrace();
-                }
-                // while cola_de_mensajes no está vacía
-                while (!messages.isEmpty()) {
-                    message = messages.poll();
-                    terminal.output("[" + new Date() + "]: " + message);
-                    terminal.outputLine("> ");
-                }
-
-            }
-            readInput.interrupt();
-            listener.interrupt();
-
-            terminal.closeScanner();
-        }
-    }
 
     public void readingInput(String message) throws NoSuchPaddingException {
         boolean commands = false;
-        //message = terminal.input();
 
         var command = Command.parseCommand(message);
         switch (command) {
@@ -241,6 +199,11 @@ public class Client implements Runnable {
                 break;
             case JOIN:
                 sendMessage(message);
+                try {
+                    System.out.println(getMessage());
+                } catch (ClientException ex) {
+                    LOGGER.log(Level.FINE, ex.toString(), ex);
+                }
                 commands = true;
                 break;
             case NOOP:
@@ -274,86 +237,9 @@ public class Client implements Runnable {
         logged = false;
     }
 
-    public boolean runAuthentication() throws InterruptedException, IOException, NoSuchPaddingException {
-        boolean serverAnswer = false;
-        String selectedOption = "";
-
-        try {
-            while (!serverAnswer) {
-                // Check if it is a client
-                optionLoginRegister();
-
-                try {
-                    selectedOption = terminal.input();
-                } catch (NoSuchElementException e) {
-                    LOGGER.log(Level.SEVERE, e.toString(), e);
-                }
-                // Checking selectedOption value
-                serverAnswer = registerLogin(selectedOption);
-            }
-        } catch (ClientException CliExp) {
-            System.out.println(CliExp.getMessage());
-        }
-        return serverAnswer;
-    }
-
-    public boolean registerLogin(String selectedOption)
-            throws NoSuchPaddingException, InterruptedException, IOException, ClientException {
-        boolean serverAnswer = false;
-        switch (selectedOption.toLowerCase()) {
-            case "1" -> {
-                if (inputUsernamePassword("REGISTER")) {
-                    serverAnswer = true;
-                }
-            }
-            case "2" -> {
-                if (inputUsernamePassword("LOGIN")) {
-                    serverAnswer = true;
-                }
-            }
-            case "exit" -> {
-
-            }
-            default -> {
-                System.out.println("Incorrect option");
-            }
-        }
-        return serverAnswer;
-    }
-
-    public void optionLoginRegister() {
-        terminal.output("Choose an option.\n'exit' for end the application.");
-        terminal.output("1. Sign up");
-        terminal.output("2. Log in");
-    }
-
-    public boolean inputUsernamePassword(String mode)
-            throws InterruptedException, IOException, ClientException, NoSuchPaddingException {
-        String username;
-        String password;
-        boolean connect = false;
-
-        while (!connect) {
-            username = terminal.username();
-            if (username.equals("back")) {
-                return false;
-            }
-            password = terminal.password();
-            if (password.equals("back")) {
-                return false;
-            }
-            connect = sendCredentials(username, password, mode);
-            if (!connect) {
-                terminal.output("The username or password are incorrect, please try again or 'back' to return back");
-            }
-        }
-        return connect;
-    }
-
     public boolean sendCredentials(String username, String password, String mode)
-            throws IOException, ClientException, InterruptedException, NoSuchPaddingException {
+         throws IOException, ClientException, InterruptedException, NoSuchPaddingException {
         // Server asks for username
-        getMessage();
         sendMessage(mode);
         String server_message = getMessage();
         if (server_message.toUpperCase().trim().equals("USER:")) {

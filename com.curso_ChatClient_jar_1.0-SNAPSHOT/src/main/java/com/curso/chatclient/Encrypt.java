@@ -25,14 +25,12 @@ public class Encrypt {
 
     private static SecretKeySpec secretKey;
     private static byte[] key;
-    //mirar mas adelante
-    private static final String myKey = "secret";
-
+    private static String myKey = "secret";
     
     public Encrypt() {      
     }
 
-    public static void setKey(String myKey) {
+    public static void setSecretKey(String myKey) {
         MessageDigest sha = null;
         try {
             key = myKey.getBytes("UTF-8");
@@ -46,7 +44,7 @@ public class Encrypt {
     }
 
     public static String encrypt(final String strToEncrypt) {
-        setKey(myKey);
+        setSecretKey(myKey);
         try {
             Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
@@ -59,7 +57,7 @@ public class Encrypt {
     }
 
     public static String decrypt(final String strToDecrypt) {
-        setKey(myKey);
+        setSecretKey(myKey);
         try {
             Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5PADDING");
             cipher.init(Cipher.DECRYPT_MODE, secretKey);

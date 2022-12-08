@@ -33,7 +33,7 @@ public class Interface {
     }
 
     public String password() {
-        output("Password :");
+        output("Password: ");
         return input();
     }
 

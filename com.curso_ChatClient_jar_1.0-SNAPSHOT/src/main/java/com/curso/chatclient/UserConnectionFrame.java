@@ -17,15 +17,18 @@ public class UserConnectionFrame {
     private JFrame frame;
     private Popup pConnect;
     private Popup pError;
-    private Client sender = null;
+    private Client sender;
+    Toolkit t = Toolkit.getDefaultToolkit();
+    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
+    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
     PopupFactory pf;
     Popup po;
 
     private static final Logger LOGGER = Logger.getLogger(Connection.class.getName());
 
-    public UserConnectionFrame(Client client) {
+    public UserConnectionFrame(Socket socket) {
 
-        // Popup panels
         PopupFactory pfConnect = new PopupFactory();
         PopupFactory pfError = new PopupFactory();
         JPanel panelConnect = new JPanel();
@@ -40,27 +43,23 @@ public class UserConnectionFrame {
         panelError.setBackground(Color.red);
         panelError.add(labelError);
         panelError.add(buttonOk2);
-        pConnect = pfConnect.getPopup(frame, panelConnect, 100, 70);
-        pError = pfError.getPopup(frame, panelError, 100, 70);
 
         buttonOk1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 pConnect.hide();
-                pConnect = pfConnect.getPopup(frame, panelConnect, 100, 70);
+                new ChatFrame(sender);
+                frame.setVisible(false);
+                sender = null;
             }
         });
         buttonOk2.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 pError.hide();
-                pError = pfError.getPopup(frame, panelError, 100, 70);
             }
         });
 
-        // Client 
-        sender = client;
-
         JLabel label1 = new JLabel("Username:", JLabel.RIGHT);
-        label1.setBounds(0, 30, 105, 30);
+        label1.setBounds(0, 20, 105, 30);
         label1.setFont(new Font("Verdana", Font.PLAIN, 16));
 
         JLabel label2 = new JLabel("Password:", JLabel.RIGHT);
@@ -68,64 +67,64 @@ public class UserConnectionFrame {
         label2.setFont(new Font("Verdana", Font.PLAIN, 16));
 
         JTextField tf1 = new JTextField();
-        tf1.setBounds(110, 30, 80, 30);
+        tf1.setBounds(110, 20, 80, 30);
 
-        JTextField tf2 = new JTextField();
-        tf2.setBounds(110, 70, 80, 30);
+        JPasswordField pf1 = new JPasswordField();
+        pf1.setBounds(110, 70, 80, 30);
 
         JButton button1 = new JButton("LOGIN");
-        button1.setBounds(195, 30, 85, 30);
+        button1.setBounds(195, 20, 90, 30);
         button1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                String username = tf1.getText();
+                String password = pf1.getText();
+                pConnect = pfConnect.getPopup(frame, panelConnect, ancho / 2, alto / 2);
+                pError = pfError.getPopup(frame, panelError, ancho / 2, alto / 2);
+
                 try {
-                    if (sender.sendCredentials(tf1.getText(), tf2.getText(), "LOGIN")) {
+                    sender = new Client(socket);
+                    if (sender.sendCredentials(username, password, "LOGIN")) {
                         pConnect.show();
-                        new ChatFrame(sender);
-                    }
-                    else 
+                    } else
                         pError.show();
-                } catch (NoSuchPaddingException | IOException | ClientException | InterruptedException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
+                } catch (NoSuchPaddingException | IOException | ClientException | InterruptedException
+                        | NoSuchAlgorithmException ex) {
+                    LOGGER.log(Level.FINE, ex.toString(), ex);
                 }
             }
         });
 
         JButton button2 = new JButton("REGISTER");
-        button2.setBounds(195, 70, 85, 30);
+        button2.setBounds(195, 70, 90, 30);
         button2.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                pConnect = pfConnect.getPopup(frame, panelConnect, ancho / 2, alto / 2);
+                pError = pfError.getPopup(frame, panelError, ancho / 2, alto / 2);
+
                 try {
-                    if (sender.sendCredentials(tf1.getText(), tf2.getText(), "REGISTER")) {
+                    sender = new Client(socket);
+                    if (sender.sendCredentials(tf1.getText(), pf1.getText(), "REGISTER")) {
                         pConnect.show();
-                        new ChatFrame(sender);
                     } else
                         pError.show();
-                } catch (NoSuchPaddingException | IOException | ClientException | InterruptedException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
+                } catch (NoSuchPaddingException | IOException | ClientException | InterruptedException
+                        | NoSuchAlgorithmException ex) {
+                            LOGGER.log(Level.FINE, ex.toString(), ex);
                 }
             }
         });
 
-        JButton button3 = new JButton("BACK");
-        button3.setBounds(220, 0, 80, 20);
-        button3.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                frame.hide();
-            }
-        });
-
         frame = new JFrame("Connection");
+        frame.pack();
         frame.add(tf1);
-        frame.add(tf2);
+        frame.add(pf1);
         frame.add(label1);
         frame.add(label2);
         frame.add(button1);
         frame.add(button2);
-        frame.add(button3);
         frame.setLayout(null);
         frame.setSize(310, 160);
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
         frame.setResizable(false);
 

@@ -13,23 +13,28 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ClientConnectionFrame {
-    private JFrame frame;
-    private Popup p1;
-    private Popup p2;
-    PopupFactory pf;
-    Popup po;
+    JFrame frame;
+    Popup p1;
+    Popup p2;
+    UserConnectionFrame user = null;
+    Socket socket;
+
+    Toolkit t = Toolkit.getDefaultToolkit();
+    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
+    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
 
     private static final Logger LOGGER = Logger.getLogger(Connection.class.getName());
 
     public ClientConnectionFrame() {
 
-        // Popup panels
+        frame = new JFrame("Connection");
         PopupFactory pfConnect = new PopupFactory();
         PopupFactory pfError = new PopupFactory();
         JPanel panelConnect = new JPanel();
         JPanel panelError = new JPanel();
         JLabel labelConnect = new JLabel("Connected");
-        JLabel labelError = new JLabel("Error");
+        JLabel labelError = new JLabel("Error, try again");
         JButton buttonOk1 = new JButton("OK");
         JButton buttonOk2 = new JButton("OK");
         panelConnect.add(labelConnect);
@@ -38,19 +43,22 @@ public class ClientConnectionFrame {
         panelError.setBackground(Color.red);
         panelError.add(labelError);
         panelError.add(buttonOk2);
-        p1 = pfConnect.getPopup(frame, panelConnect, 100, 70);
-        p2 = pfError.getPopup(frame, panelError, 100, 70);
+        p1 = pfConnect.getPopup(frame, panelConnect, ancho/2, alto/2);
+        p2 = pfError.getPopup(frame, panelError, ancho/2, alto/2);
 
         buttonOk1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 p1.hide();
-                p1 = pfConnect.getPopup(frame, panelConnect, 100, 70);
+                new UserConnectionFrame(socket);
+                p1 = pfConnect.getPopup(frame, panelConnect, ancho/2, alto/2);
+                frame.hide();
             }
         });
+
         buttonOk2.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 p2.hide();
-                p2 = pfError.getPopup(frame, panelError, 100, 70);
+                p2 = pfError.getPopup(frame, panelError, ancho/2, alto/2);
             }
         });
 
@@ -72,9 +80,7 @@ public class ClientConnectionFrame {
         button.setBounds(175, 20, 110, 80);
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Socket socket = null;
                 Connection conct = null;
-                Client sender = null;
                 String ip = tf1.getText();
                 String port = tf2.getText();
 
@@ -82,14 +88,12 @@ public class ClientConnectionFrame {
                     if (Connection.checkIp(ip) && Connection.checkPort(port)) {
                         conct = new Connection(ip, Integer.parseInt(port));
                         socket = conct.stablishConnection();
-                        sender = new Client(socket);
                         p1.show();
-                        UserConnectionFrame user = new UserConnectionFrame(sender);
                     } else {
                         p2.show();
                     }
 
-                } catch (ClientException | IOException | NoSuchAlgorithmException ex) {
+                } catch (ClientException | IOException ex) {
                     p2.show();
                     LOGGER.log(Level.SEVERE, ex.toString(), ex);
                 }
@@ -97,7 +101,7 @@ public class ClientConnectionFrame {
             }
         });
 
-        frame = new JFrame("Connection");
+        frame.pack();
         frame.add(tf1);
         frame.add(tf2);
         frame.add(label1);
@@ -105,8 +109,9 @@ public class ClientConnectionFrame {
         frame.add(button);
         frame.setLayout(null);
         frame.setSize(310, 160);
-        frame.setVisible(true);
+        frame.setLocationRelativeTo(null);
         frame.setResizable(false);
+        frame.setVisible(true);
 
     }
 
