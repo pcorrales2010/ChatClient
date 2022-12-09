@@ -27,16 +27,6 @@ public class Interface {
         return sc.nextLine();
     }
 
-    public String username() {
-        output("Username: ");
-        return input();
-    }
-
-    public String password() {
-        output("Password: ");
-        return input();
-    }
-
     public void output(String message) {
         System.out.println(message);
     }

@@ -98,5 +98,6 @@ public class ChatFrame {
         frame.setLayout(null);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+        frame.setResizable(false);
     }
 }

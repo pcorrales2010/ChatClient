@@ -45,12 +45,11 @@ public class Client implements Runnable {
 
         @Override
         public void run() {
-                while (logged) {                    
+            while (logged) {
                 try {
                     messages.add(getMessage());
                 } catch (ClientException ex) {
-                    logged = false;
-                    LOGGER.log(Level.SEVERE, ex.toString(), ex);                     
+                    LOGGER.log(Level.FINE, ex.toString(), ex);
                 }
             }
         }
@@ -64,13 +63,13 @@ public class Client implements Runnable {
                 try {
                     readingInput();
                 } catch (NoSuchPaddingException ex) {
-                    LOGGER.log(Level.SEVERE, ex.toString(), ex); 
+                    LOGGER.log(Level.SEVERE, ex.toString(), ex);
                 }
             }
         }
     };
-    
-    
+
+
     /**
      * Constructor that receive a Socket and fill writer and reader private
      * variables.
@@ -92,7 +91,7 @@ public class Client implements Runnable {
             try {
                 output = socket.getOutputStream();
             } catch (IOException ex) {
-                LOGGER.log(Level.SEVERE, ex.toString(), ex); 
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
                 throw new ClientException("Error creating the output stream: the socket could not be connected");
             }
 
@@ -100,8 +99,9 @@ public class Client implements Runnable {
                 writer = new PrintWriter(output, true);
                 input = socket.getInputStream();
             } catch (SecurityException | IllegalArgumentException | IOException ex) {
-                LOGGER.log(Level.SEVERE, ex.toString(), ex);                
-                throw new ClientException("Error creating the input stream: The socket is closed, not connected or the input has been shutdown");
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                throw new ClientException(
+                        "Error creating the input stream: The socket is closed, not connected or the input has been shutdown");
             }
 
             reader = new BufferedReader(new InputStreamReader(input));
@@ -133,7 +133,7 @@ public class Client implements Runnable {
         try {
             line = reader.readLine();
         } catch (IOException ex) {
-            LOGGER.log(Level.FINE, ex.toString(), ex);
+            LOGGER.log(Level.SEVERE, ex.toString(), ex);
             throw new ClientException("Error reading line.");
         }
 
@@ -145,7 +145,7 @@ public class Client implements Runnable {
     }
 
     public void run() {
-        }
+    }
 
     public void readingInput(String message) throws NoSuchPaddingException {
         boolean commands = false;
@@ -157,7 +157,7 @@ public class Client implements Runnable {
                     exit();
                     commands = true;
                 } catch (IOException ex) {
-                    LOGGER.log(Level.FINE, ex.toString(), ex);
+                    LOGGER.log(Level.SEVERE, ex.toString(), ex);
                 }
                 break;
             case SECRET:
@@ -190,7 +190,7 @@ public class Client implements Runnable {
                     exit();
                     commands = true;
                 } catch (IOException ex) {
-                    LOGGER.log(Level.FINE, ex.toString(), ex);
+                    LOGGER.log(Level.SEVERE, ex.toString(), ex);
                 }
                 break;
             case SECRET:
@@ -202,7 +202,7 @@ public class Client implements Runnable {
                 try {
                     System.out.println(getMessage());
                 } catch (ClientException ex) {
-                    LOGGER.log(Level.FINE, ex.toString(), ex);
+                    LOGGER.log(Level.SEVERE, ex.toString(), ex);
                 }
                 commands = true;
                 break;
@@ -238,7 +238,7 @@ public class Client implements Runnable {
     }
 
     public boolean sendCredentials(String username, String password, String mode)
-         throws IOException, ClientException, InterruptedException, NoSuchPaddingException {
+            throws IOException, ClientException, InterruptedException, NoSuchPaddingException {
         // Server asks for username
         sendMessage(mode);
         String server_message = getMessage();

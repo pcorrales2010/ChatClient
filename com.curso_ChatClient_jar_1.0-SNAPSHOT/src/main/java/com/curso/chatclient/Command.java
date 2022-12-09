@@ -13,7 +13,7 @@ import java.util.Arrays;
 public enum Command {
     SECRET("/secret"),
     MENU("/menu"),
-    HEADORTAILS("/headortails"),
+    HEADORTAILS("/headsortails"),
     EXIT("/exit"),
     JOIN("/join"),
     JOKE("/joke"),
