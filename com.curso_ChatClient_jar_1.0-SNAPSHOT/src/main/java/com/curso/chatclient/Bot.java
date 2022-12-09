@@ -12,12 +12,8 @@ import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
-import java.time.Duration;
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.Random;
-import java.util.logging.Logger;
-import javax.crypto.NoSuchPaddingException;
 import java.io.InputStreamReader;
 import java.net.ProtocolException;
 import org.json.*;
@@ -28,8 +24,6 @@ import org.json.*;
  */
 public class Bot extends Client {
 
-    private final static Logger LOGGER = Logger.getLogger(Interface.class.getName());
-
     public Bot(Socket newSocket) throws ClientException, NoSuchAlgorithmException {
         super(newSocket);
     }
@@ -39,20 +33,9 @@ public class Bot extends Client {
 
         // Client authentication
         while (!logged) {
-            try {
-                logged = sendCredentials("bot", "bot", "LOGIN");
-
-            } catch (ClientException | NoSuchPaddingException | IOException | InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            logged = sendCredentials("bot", "bot", "REGISTER");
             if (!logged) {
-                try {
-                    logged = sendCredentials("bot", "bot", "REGISTER");
-                } catch (NoSuchPaddingException | IOException | ClientException | InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
+                logged = sendCredentials("bot", "bot", "LOGIN");
             }
         }
 
@@ -60,11 +43,10 @@ public class Bot extends Client {
         Thread listener = new Thread(listening);
         listener.start();
 
-        while (logged) {
+        while (true) {
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
             // while cola_de_mensajes no está vacía
@@ -91,20 +73,12 @@ public class Bot extends Client {
                 }
                 terminal.output(message);
             }
-            listener.interrupt();
-
-            terminal.closeScanner();
         }
     }
 
     public void botMenu() {
-        try {
-            sendMessage(
-                    "ChatBot menu: \'/joke\': serve a random joke \n \'/event\': serve a random event of the same day of another year  \n \'/headsortails\'");
-        } catch (NoSuchPaddingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        sendMessage(
+                "ChatBot menu: \n\'/joke\': serve a random joke \n \'/event\': serve a random event of the same day of another year  \n \'/headsortails\'");
     }
 
     public void jokes() {
@@ -150,7 +124,7 @@ public class Bot extends Client {
                 } else if (myJson.get("type").equals("single")) {
                     sendMessage(myJson.get("joke").toString());
                 }
-            } catch (NoSuchPaddingException | JSONException e) {
+            } catch (JSONException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
@@ -171,7 +145,6 @@ public class Bot extends Client {
             urlForGetReq = new URL(
                     "https://byabbe.se/on-this-day/" + (d1.getMonth() + 1) + "/" + d1.getDate() + "/events.json");
         } catch (MalformedURLException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -181,7 +154,6 @@ public class Bot extends Client {
             try {
                 connection.setRequestMethod("GET");
             } catch (ProtocolException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
 
@@ -203,16 +175,10 @@ public class Bot extends Client {
             int numberRandom = random.nextInt(myJsonArray.length());
 
             // Obtener llave especifica de un objeto JSON
-            try {
-                sendMessage("Year: " + myJsonArray.getJSONObject(numberRandom).get("year") + ". "
-                        + myJsonArray.getJSONObject(numberRandom).get("description"));
-            } catch (NoSuchPaddingException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            sendMessage("Year: " + myJsonArray.getJSONObject(numberRandom).get("year") + ". "
+                    + myJsonArray.getJSONObject(numberRandom).get("description"));
 
         } catch (JSONException | IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
@@ -225,12 +191,7 @@ public class Bot extends Client {
             headortails = "head";
         } else
             headortails = "tail";
-        try {
-            sendMessage(headortails);
-        } catch (NoSuchPaddingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        sendMessage(headortails);
     }
     // documentacion de clasese
 }

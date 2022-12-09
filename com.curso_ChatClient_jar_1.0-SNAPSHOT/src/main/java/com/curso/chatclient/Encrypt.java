@@ -27,7 +27,7 @@ public class Encrypt {
     private static byte[] key;
     private static String myKey = "secret";
     
-    public Encrypt() {      
+    public Encrypt() {    
     }
 
     public static void setSecretKey(String myKey) {

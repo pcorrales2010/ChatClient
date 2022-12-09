@@ -1,13 +1,9 @@
 package com.curso.chatclient;
 
-import javax.crypto.NoSuchPaddingException;
 import javax.swing.*;
-
 import com.curso.exceptions.ClientException;
-
 import java.awt.*;
 import java.awt.event.*;
-import java.io.IOException;
 import java.net.Socket;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
@@ -22,8 +18,6 @@ public class UserConnectionFrame {
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
     int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
-    PopupFactory pf;
-    Popup po;
 
     private static final Logger LOGGER = Logger.getLogger(Connection.class.getName());
 
@@ -34,7 +28,7 @@ public class UserConnectionFrame {
         JPanel panelConnect = new JPanel();
         JPanel panelError = new JPanel();
         JLabel labelConnect = new JLabel("Connected");
-        JLabel labelError = new JLabel("Error");
+        JLabel labelError = new JLabel("User/password incorrect");
         JButton buttonOk1 = new JButton("OK");
         JButton buttonOk2 = new JButton("OK");
         panelConnect.add(labelConnect);
@@ -87,9 +81,8 @@ public class UserConnectionFrame {
                         pConnect.show();
                     } else
                         pError.show();
-                } catch (NoSuchPaddingException | IOException | ClientException | InterruptedException
-                        | NoSuchAlgorithmException ex) {
-                    LOGGER.log(Level.FINE, ex.toString(), ex);
+                } catch (ClientException | NoSuchAlgorithmException ex) {
+                    LOGGER.log(Level.SEVERE, ex.toString(), ex);
                 }
             }
         });
@@ -107,9 +100,8 @@ public class UserConnectionFrame {
                         pConnect.show();
                     } else
                         pError.show();
-                } catch (NoSuchPaddingException | IOException | ClientException | InterruptedException
-                        | NoSuchAlgorithmException ex) {
-                            LOGGER.log(Level.FINE, ex.toString(), ex);
+                } catch (ClientException| NoSuchAlgorithmException ex) {
+                    LOGGER.log(Level.SEVERE, ex.toString(), ex);
                 }
             }
         });

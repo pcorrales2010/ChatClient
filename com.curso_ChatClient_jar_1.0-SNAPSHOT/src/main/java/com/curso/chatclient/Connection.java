@@ -115,7 +115,6 @@ public class Connection {
             } catch (SecurityException | IllegalArgumentException | IOException ex) {
                 LOGGER.log(Level.SEVERE, ex.toString(), ex);
             }
-
         }
         return socket;
     }
