@@ -35,27 +35,6 @@ public class Bot extends Client {
     }
 
     @Override
-    public boolean sendCredentials(String username, String password, String mode)
-            throws IOException, ClientException, InterruptedException, NoSuchPaddingException {
-        // Server asks for username
-        sendMessage(mode);
-        String server_message = getMessage();
-        if (server_message.toUpperCase().trim().equals("USER:")) {
-            sendMessage(username);
-        }
-
-        // Server asks for password
-        server_message = getMessage();
-        if (server_message.toUpperCase().trim().equals("PASSWORD:")) {
-            sendMessage(password);
-        }
-
-        // Server answers 'successful' or 'Error'
-        server_message = getMessage();
-        return server_message.trim().toUpperCase().equals("SUCCESSFUL");
-    }
-
-    @Override
     public void run() {
 
         // Client authentication
@@ -101,7 +80,12 @@ public class Bot extends Client {
                     case HEADORTAILS:
                         headsOrTails();
                         break;
-                        case JOKe
+                    case JOKE:
+                        jokes();
+                        break;
+                    case EVENT:
+                        events();
+                        break;
                     case NOOP:
                         break;
                 }
@@ -113,19 +97,16 @@ public class Bot extends Client {
         }
     }
 
-    public String decodingMessage(String message) {
-        String[] splitted = message.split("] ");
-        return splitted[1];
-    }
-
     public void botMenu() {
         try {
-            sendMessage("ChatBot menu:\n \'/joke\': serve a random joke \n\'/event\': serve a random event that happened on this day \n\'/headsortails\': heads or tails");
+            sendMessage(
+                    "ChatBot menu: \'/joke\': serve a random joke \n \'/event\': serve a random event of the same day of another year  \n \'/headsortails\'");
         } catch (NoSuchPaddingException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
+
     public void jokes() {
         URL url = null;
         String read = null;
@@ -251,5 +232,5 @@ public class Bot extends Client {
             e.printStackTrace();
         }
     }
-    //documentacion de clasese
+    // documentacion de clasese
 }

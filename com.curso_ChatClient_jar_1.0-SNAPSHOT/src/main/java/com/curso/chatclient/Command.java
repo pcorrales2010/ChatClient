@@ -13,7 +13,9 @@ import java.util.Arrays;
 public enum Command {
     SECRET("/secret"),
     MENU("/menu"),
-    HEADORTAILS("/headsortails"),
+    HEADORTAILS("/headortails"),
+    JOKE("/joke"),
+    EVENT("/event"),
     EXIT("/exit"),
     JOIN("/join"),
     NOOP("");
