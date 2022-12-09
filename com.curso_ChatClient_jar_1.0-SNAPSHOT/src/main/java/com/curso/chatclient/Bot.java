@@ -5,7 +5,6 @@
 package com.curso.chatclient;
 
 import com.curso.exceptions.ClientException;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -102,12 +101,7 @@ public class Bot extends Client {
                     case HEADORTAILS:
                         headsOrTails();
                         break;
-                    case JOKE:
-                        jokes();
-                        break;
-                    case EVENT:
-                        events();
-                        break;
+                        case JOKe
                     case NOOP:
                         break;
                 }
@@ -132,7 +126,6 @@ public class Bot extends Client {
             e.printStackTrace();
         }
     }
-
     public void jokes() {
         URL url = null;
         String read = null;
@@ -258,4 +251,5 @@ public class Bot extends Client {
             e.printStackTrace();
         }
     }
+    //documentacion de clasese
 }

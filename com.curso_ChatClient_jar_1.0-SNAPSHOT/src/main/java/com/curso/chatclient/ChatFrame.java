@@ -52,7 +52,7 @@ public class ChatFrame {
         textAreaOutput.append("Welcome to the chat. \n");
 
         JScrollPane scrollableTextArea1 = new JScrollPane(textAreaOutput);
-        scrollableTextArea1.setBounds(10, 15, 900, 445);
+        scrollableTextArea1.setBounds(10, 10, 600, 450);
 
         JTextField textAreaInput = new JTextField();
         textAreaInput.setBounds(10, 475, 600, 50);
@@ -70,6 +70,12 @@ public class ChatFrame {
                 }
             }
         });
+
+        JTextArea users = new JTextArea();
+        users.setFont(new Font("Verdana", Font.PLAIN, 12));
+
+        JScrollPane scrollableTextArea2 = new JScrollPane(users);
+        scrollableTextArea2.setBounds(620, 10, 290, 450);
 
         JButton button = new JButton("SEND");
         button.setBounds(620, 475, 290, 50);
@@ -92,6 +98,7 @@ public class ChatFrame {
         frame.setSize(940, 575);
         frame.getContentPane().add(scrollableTextArea1);
         frame.add(textAreaInput);
+        frame.add(scrollableTextArea2);
         frame.add(button);
         frame.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         frame.setTitle("Client");

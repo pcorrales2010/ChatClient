@@ -16,10 +16,7 @@ public enum Command {
     HEADORTAILS("/headsortails"),
     EXIT("/exit"),
     JOIN("/join"),
-    JOKE("/joke"),
-    EVENT("/event"),
     NOOP("");
-
 
     private String value;
 

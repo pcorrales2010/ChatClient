@@ -45,11 +45,12 @@ public class Client implements Runnable {
 
         @Override
         public void run() {
-            while (logged) {
+            while (true) {
                 try {
                     messages.add(getMessage());
+                    System.out.println(messages);
                 } catch (ClientException ex) {
-                    LOGGER.log(Level.FINE, ex.toString(), ex);
+                    LOGGER.log(Level.SEVERE, ex.toString(), ex);
                 }
             }
         }
