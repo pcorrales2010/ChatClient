@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 /**
  * This class works getting data in and out of the clients
  *
- * @author josemrm30
+ * @author pcorrales2010
  */
 public class Interface {
 
@@ -25,16 +25,6 @@ public class Interface {
 
     public String input() {
         return sc.nextLine();
-    }
-
-    public String username() {
-        output("Username: ");
-        return input();
-    }
-
-    public String password() {
-        output("Password :");
-        return input();
     }
 
     public void output(String message) {

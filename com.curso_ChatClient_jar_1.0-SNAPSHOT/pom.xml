@@ -55,7 +55,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>19</maven.compiler.source>
         <maven.compiler.target>19</maven.compiler.target>
-        <exec.mainClass>com.curso.chatclient.ChatClient</exec.mainClass>
+        <exec.mainClass>com.curso.chatclient.ClientConnectionFrame</exec.mainClass>
     </properties>
     <name>ChatClient</name>
 </project>

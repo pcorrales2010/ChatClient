@@ -71,7 +71,7 @@ public class Bot extends Client {
                     case NOOP:
                         break;
                 }
-                terminal.output(message);
+                System.out.println(message);
             }
         }
     }

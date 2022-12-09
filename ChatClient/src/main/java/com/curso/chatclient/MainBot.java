@@ -22,11 +22,10 @@ public class MainBot {
 
     public static void main(String[] args) throws ClientException, InterruptedException, NoSuchAlgorithmException,
             IOException, NoSuchPaddingException {
-        Interface terminal = new Interface();
         boolean running = true;
         Connection conct = null;
         Socket socket = null;
-        Client bot = null;
+        Bot bot = null;
         String port;
         String ip;
 

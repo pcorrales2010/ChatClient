@@ -34,8 +34,6 @@ public class Client implements Runnable {
     protected boolean logged = false;
     protected ArrayDeque<String> messages = new ArrayDeque<String>();
     private Socket socket;
-    Connection conct;
-    protected Interface terminal;
 
     Runnable listening = new Runnable() {
 
@@ -67,7 +65,6 @@ public class Client implements Runnable {
             InputStream input;
             OutputStream output;
             cipherMessage = false;
-            terminal = new Interface();
 
             try {
                 output = socket.getOutputStream();

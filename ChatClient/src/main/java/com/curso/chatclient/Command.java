@@ -13,11 +13,9 @@ import java.util.Arrays;
 public enum Command {
     SECRET("/secret"),
     MENU("/menu"),
-    DUMB("/dumb"),
-    COMPATIBILITY("/compatibility"),
-    DEATHDATE("/deathdate"),
     HEADORTAILS("/headortails"),
-    EXIT("/exit"),
+    JOKE("/joke"),
+    EVENT("/event"),
     JOIN("/join"),
     NOOP("");
 
